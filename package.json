@@ -1,0 +1,15 @@
+{
+  "name": "thehole.ca",
+  "version": "0.0.0",
+  "description": "test website",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "William Bolduc",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "jade": "^1.11.0"
+  }
+}
