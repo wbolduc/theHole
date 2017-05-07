@@ -24,7 +24,7 @@ $(function () {
     }
 
     // open connection
-    var connection = new WebSocket('ws://thehole.ca:1337'); //this is the server //NOTE: had to change from thehole.ca to this ip and port
+    var connection = new WebSocket('ws://104.158.175.164:1337/'); //this is the server //NOTE: had to change from thehole.ca to this ip and port
 
     connection.onopen = function () {
         // first we want users to enter their names
@@ -63,13 +63,14 @@ $(function () {
                 addMessage(json.data[i].author, json.data[i].text,
                            json.data[i].color, new Date(json.data[i].time));
             }
+			content.scrollTop(content[0].scrollHeight);//scroll to bottom after getting history
         } else if (json.type === 'message') { // it's a single message
             input.removeAttr('disabled').focus(); // let the user write another message
 
 			addMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time));
 
-
+			content.animate({scrollTop: content[0].scrollHeight},1000);		//animate chatScroll
         } else {
             console.log('Hmm..., I\'ve never seen JSON like this: ', json);
         }
@@ -120,8 +121,6 @@ $(function () {
              + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
              + ': ' + message + '</p>');
 
-		console.log(document.getElementById('content').scrollHeight);
-
-		content.scrollTop = content.scrollHeight;
-    }
+		//content.scrollTop(content[0].scrollHeight); //NOTE: I do not know whay this [0] is for
+    }												//"You need [0] to get the dom element from jquery to get scrollHeight"
 });
