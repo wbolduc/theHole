@@ -70,11 +70,12 @@ $(function () {
 			addMessage(json.data.author, json.data.text,
                        json.data.color, new Date(json.data.time));
 
-			content.animate({scrollTop: content[0].scrollHeight},1000);		//animate chatScroll
+			content.animate({scrollTop: content[0].scrollHeight},500);		//animate chatScroll
         } else {
             console.log('Hmm..., I\'ve never seen JSON like this: ', json);
         }
     };
+
 
     /**
      * Send mesage when user presses Enter key
