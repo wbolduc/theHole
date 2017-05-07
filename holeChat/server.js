@@ -6,7 +6,7 @@ var http = require('http');
 
 
 // how far back the server remembers
-var chatMem = 100;
+var chatMem = 200;
 var chatHistory = [];
 
 // list of connected clients
@@ -97,7 +97,7 @@ wsServer.on('request', function(request){
 function updateChatlog(obj)
 {
 	chatHistory.push(obj);
-	charHistory = chatHistory.slice(-chatMem);
+	chatHistory = chatHistory.slice(-chatMem);
 }
 function broadcast(obj)
 {
