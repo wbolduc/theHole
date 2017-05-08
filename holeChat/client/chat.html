@@ -2,27 +2,59 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Simple chat</title>
+        <title>Hole Chat</title>
 
         <style>
         * { font-family:tahoma; font-size:12px; padding:0px; margin:0px; }
         p { line-height:18px; }
-        div { width:500px; margin-left:auto; margin-right:auto;}
-        #content { padding:5px; background:#ddd; border-radius:5px; overflow-y: scroll;
-                   border:1px solid #CCC; margin-top:10px; height: 800px; }
-        #input { border-radius:2px; border:1px solid #ccc;
-                 margin-top:10px; padding:5px; width:400px;  }
-        #status { width:88px; display:block; float:left; margin-top:15px; }
+        .chatArea { width:500px; margin-left: 10px; float: left;}
+
+		.connectionBox	{	float:left;
+							margin: 10px;
+							margin-right: 0px;
+							border-style: solid;
+							border-radius: 5px;
+							border-width: 2px;
+							width: 100px;	}
+		.connectionElement {	border-bottom: 2px solid;
+								line-height: 18px;
+								padding: 2px}
+
+		#stalkers { border-bottom-style: none;}
+
+        #content {	padding:5px;
+			 		background:#ddd;
+					border-radius:5px;
+					overflow-y: scroll;
+					border:2px solid #CCC;
+					margin-top:10px;
+					height: 800px;	}
+
+        #input {	border-radius:5px;
+			 		border:1px solid #ccc;
+					padding:5px;
+					width: 100%		}
+
+
         </style>
     </head>
     <body>
-        <div id="content"></div>
-        <div>
-            <span id="status">Connecting...</span>
-            <input type="text" id="input" disabled="disabled" />
-        </div>
+		<div class="connectionBox">
+			<div class="connectionElement" style="background:#3d6">Connections</div>
+			<div id="connected" class="connectionElement"></div>
+			<div id="stalkers" class="connectionElement">No Stalkers</div>
+		</div>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<div class="chatArea">
+			<div id="content" class="chatArea"></div>
+
+			<div class="chatArea" style="margin:10px; display:table">
+    			<span id="status" style="display:table-cell; margin-left:10px; width:1px;">Connecting...</span>
+    			<input id="input" disabled="disabled" style="display:table-cell; margin-left:2px; width:100%" />
+			</div>
+		</div>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="./frontEnd.js"></script>
     </body>
 </html>

@@ -99,6 +99,7 @@ function updateChatlog(obj)
 	chatHistory.push(obj);
 	chatHistory = chatHistory.slice(-chatMem);
 }
+
 function broadcast(obj)
 {
 	//broadcast message to connected clients
