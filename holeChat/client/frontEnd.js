@@ -1,10 +1,11 @@
 $(function () {
     "use strict";
-
     // for better performance - to avoid searching in DOM
     var content = $('#content');
     var input = $('#input');
     var status = $('#status');
+	let connectionCount = $('#connectionCount');
+	let stalkers = $('#stalkers');
 
     // my color assigned by the server
     var myColor = false;
@@ -46,33 +47,40 @@ $(function () {
         try {
             var json = JSON.parse(message.data);
         } catch (e) {
-            console.log('This doesn\'t look like a valid JSON: ', message.data);
+			console.log(message);
+			console.log(e);
+            //console.log('This doesn\'t look like a valid JSON: ', message);
             return;
         }
 
         // NOTE: if you're not sure about the JSON structure
         // check the server source code above
         if (json.type === 'color') { // first response from the server with user's color
-            myColor = json.data;
+			myColor = json.color;
             status.text(myName + ': ').css('color', myColor);
             input.removeAttr('disabled').focus();
             // from now user can start sending messages
-        } else if (json.type === 'history') { // entire message history
-            // insert every single message to the chat window
-            for (var i=0; i < json.data.length; i++) {
-                addMessage(json.data[i].author, json.data[i].text,
-                           json.data[i].color, new Date(json.data[i].time));
-            }
-			content.scrollTop(content[0].scrollHeight);//scroll to bottom after getting history
+			
+        } else if (json.type === 'history') { // entire message history and current connections
+			// insert every single message to the chat window
+            for (var i=0; i < json.history.length - 1; i++)
+                addMessage(json.history[i]);
+			addMessageWithScroll(json.history[i]);
+
         } else if (json.type === 'message') { // it's a single message
             input.removeAttr('disabled').focus(); // let the user write another message
+			addMessageWithScroll(json);
 
-			addMessage(json.data.author, json.data.text,
-                       json.data.color, new Date(json.data.time));
+		} else if (json.type === 'serverMessege') {
+			addMessageWithScroll(json);
+			updateStalkers(json.stalkers);
 
-			content.animate({scrollTop: content[0].scrollHeight},500);		//animate chatScroll
-        } else {
-            console.log('Hmm..., I\'ve never seen JSON like this: ', json);
+        } else if (json.type === "userSummary") {
+			updateStalkers(json.stalkers);
+			connectionCount.html("Connections:&nbsp;" + json.connections);
+        }
+		else {
+            console.log('This type of messege is not implemented yet: ', json);
         }
     };
 
@@ -113,15 +121,47 @@ $(function () {
         }
     }, 3000);
 
+	function updateStalkers(stalkCount){
+		let stalkStr = "";
+		if(stalkCount === 0)
+			stalkStr = "No stalkers"
+		else if (stalkCount === 1)
+		 	if (myName === false)
+				stalkStr = "You are the only stalker";
+			else
+				stalkStr = "There's a stalker";
+		else
+			if (myName === false)
+				if (stalkCount === 2)
+					stalkStr = "There one stalker and you!";
+				else
+					stalkStr = "There are " + (stalkCount-1) + " stalkers and you!";
+			else
+				stalkStr = "There are " + stalkCount + " stalkers!";
+		stalkers.html(stalkStr);
+	}
+
+	function addMessageWithScroll(messege)
+	{
+		addMessage(messege);
+		content.animate({scrollTop: content[0].scrollHeight},500);		//animate chatScroll //NOTE: I do not know whay this [0] is for
+	}//"You need [0] to get the dom element from jquery to get scrollHeight"
+
     /**
      * Add message to the chat window
      */
-    function addMessage(author, message, color, dt) {
-        content.append('<p><span style="color:' + color + '">' + author + '</span> @ ' +
-             + (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
-             + (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
-             + ': ' + message + '</p>');
+    function addMessage(messege) {
+		let dt = new Date(messege.time);
+		if (messege.type == "serverMessege")
+			content.append('<p><span><b>Server:</b></span> User <span class="blackOutLine" style="color:' + messege.color +'">' + messege.author + '</span> @ ' +
+             	+ (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
+             	+ (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
+             	+ ': ' + messege.text + '</p>');
+		else
+        	content.append('<p><span class="blackOutLine" style="color:' + messege.color +'">' + messege.author + '</span> @ ' +
+             	+ (dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours()) + ':'
+             	+ (dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes())
+             	+ ': ' + messege.text + '</p>');
 
-		//content.scrollTop(content[0].scrollHeight); //NOTE: I do not know whay this [0] is for
-    }												//"You need [0] to get the dom element from jquery to get scrollHeight"
+    }
 });

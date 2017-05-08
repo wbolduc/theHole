@@ -5,8 +5,9 @@
         <title>Hole Chat</title>
 
         <style>
-        * { font-family:tahoma; font-size:12px; padding:0px; margin:0px; }
-        p { line-height:18px; }
+        * { font-family:tahoma; font-size:16px; padding:0px; margin:0px; }
+        p { line-height:18px;}
+		.blackOutLine{ text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; }
         .chatArea { width:500px; margin-left: 10px; float: left;}
 
 		.connectionBox	{	float:left;
@@ -15,7 +16,7 @@
 							border-style: solid;
 							border-radius: 5px;
 							border-width: 2px;
-							width: 100px;	}
+							}
 		.connectionElement {	border-bottom: 2px solid;
 								line-height: 18px;
 								padding: 2px}
@@ -40,16 +41,16 @@
     </head>
     <body>
 		<div class="connectionBox">
-			<div class="connectionElement" style="background:#3d6">Connections</div>
+			<div id="connectionCount" class="connectionElement" style="background:#3d6">Connections: 0</div>
 			<div id="connected" class="connectionElement"></div>
-			<div id="stalkers" class="connectionElement">No Stalkers</div>
+			<div id="stalkers" class="connectionElement">You are a stalker</div>
 		</div>
 
 		<div class="chatArea">
 			<div id="content" class="chatArea"></div>
 
 			<div class="chatArea" style="margin:10px; display:table">
-    			<span id="status" style="display:table-cell; margin-left:10px; width:1px;">Connecting...</span>
+    			<span id="status" style="display:table-cell; word-wrap:break-word; margin-left:10px; width:1px; max-width:120px;">Connecting...</span>
     			<input id="input" disabled="disabled" style="display:table-cell; margin-left:2px; width:100%" />
 			</div>
 		</div>
