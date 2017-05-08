@@ -79,7 +79,6 @@ wsServer = new WebSocketServer({
 //websocket server
 wsServer.on('request', function(request){
 	console.log((new Date()) + ' Connection from origin ' + request.origin + '.');
-
 	var connection = request.accept(null, request.origin);
 	//should check request origin -- sercurity reasons
 
@@ -148,10 +147,8 @@ wsServer.on('request', function(request){
 		if (userName !== false && userColor !== false)
 		{
 			console.log((new Date()) + " Peer named \"" + userName + "\" "+ connection.remoteAddress + " disconnected.");
-			totalConnections--;
 			var obj = {
 				type: 'serverMessege',
-				connections:totalConnections,
 				time: (new Date()).getTime(),
 				text: 'Disconnected',
 				author: userName,
@@ -159,21 +156,24 @@ wsServer.on('request', function(request){
 			}
 			updateChatlog(obj);
 			broadcast(obj);
-
 			//remove user from list of clients
 			clients.splice(index, 1);
+			totalConnections--;
 		}
 		else {
 			//must have been a stalker
 			stalkers--;
 		}
+		updateUserSummary();
 	});
 
 	function updateUserSummary()
 	{
-		connection.sendUTF(JSON.stringify({ type: "userSummary",
-											connections: totalConnections,
-											stalkers:stalkers}));
+		console.log(" ------------ " + stalkers + " ------------ ");
+		console.log(" ------------ " + totalConnections + " ------------ ");
+		broadcast({	type: 			"userSummary",
+					connections: 	totalConnections,
+					stalkers:		stalkers	});
 	}
 
 	function updateChatlog(obj)

@@ -47,20 +47,16 @@ $(function () {
         try {
             var json = JSON.parse(message.data);
         } catch (e) {
-			console.log(message);
-			console.log(e);
-            //console.log('This doesn\'t look like a valid JSON: ', message);
+            console.log('This doesn\'t look like a valid JSON: ', message);
             return;
         }
 
-        // NOTE: if you're not sure about the JSON structure
-        // check the server source code above
         if (json.type === 'color') { // first response from the server with user's color
 			myColor = json.color;
             status.text(myName + ': ').css('color', myColor);
             input.removeAttr('disabled').focus();
             // from now user can start sending messages
-			
+
         } else if (json.type === 'history') { // entire message history and current connections
 			// insert every single message to the chat window
             for (var i=0; i < json.history.length - 1; i++)
@@ -73,7 +69,6 @@ $(function () {
 
 		} else if (json.type === 'serverMessege') {
 			addMessageWithScroll(json);
-			updateStalkers(json.stalkers);
 
         } else if (json.type === "userSummary") {
 			updateStalkers(json.stalkers);
@@ -133,7 +128,7 @@ $(function () {
 		else
 			if (myName === false)
 				if (stalkCount === 2)
-					stalkStr = "There one stalker and you!";
+					stalkStr = "There's one stalker and you!";
 				else
 					stalkStr = "There are " + (stalkCount-1) + " stalkers and you!";
 			else
