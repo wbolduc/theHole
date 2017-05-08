@@ -23,8 +23,7 @@ function htmlEntities(str) {
 }
 
 /**from https://stackoverflow.com/questions/36721830/convert-hsl-to-rgb-and-hex
-
-* Converts an HSL color value to RGB. Conversion formula
+ * Converts an HSL color value to RGB. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
  * s, l are contained in the set [0, 100]**/
 function hslToHex(h, s, l) {
@@ -169,8 +168,6 @@ wsServer.on('request', function(request){
 
 	function updateUserSummary()
 	{
-		console.log(" ------------ " + stalkers + " ------------ ");
-		console.log(" ------------ " + totalConnections + " ------------ ");
 		broadcast({	type: 			"userSummary",
 					connections: 	totalConnections,
 					stalkers:		stalkers	});
