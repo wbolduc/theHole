@@ -1,19 +1,17 @@
 process.title = 'node-chat';
 
-var WebSocketServerPort = 1337;
-var WebSocketServer = require('websocket').server;
-var http = require('http');
+let WebSocketServerPort = 1337;
+let WebSocketServer = require('websocket').server;
+let http = require('http');
 
 
 // how far back the server remembers
-var chatMem = 200;
-var chatHistory = [];
+let chatMem = 200;
+let chatHistory = [];
 
-// list of connected clients
-let clients = [];
-var liveClients = [];
-var awayClients = [];
-var stalkers = 0;
+//connected clients
+let clients = new Map();
+let stalkers = 0;
 let	totalConnections = 0;
 
 // Helper function for escaping input strings
@@ -62,7 +60,7 @@ function randomColor()
 					Math.floor((Math.random() * 70)+ 30));		//lightness
 }
 
-var server = http.createServer(function(request, response){
+let server = http.createServer(function(request, response){
 	//not important since it's a web socket server
 });
 
@@ -78,14 +76,11 @@ wsServer = new WebSocketServer({
 //websocket server
 wsServer.on('request', function(request){
 	console.log((new Date()) + ' Connection from origin ' + request.origin + '.');
-	var connection = request.accept(null, request.origin);
-	//should check request origin -- sercurity reasons
-
-	var index = clients.push(connection) - 1;
-	var userName = false;
-	var userColor = false;
-
-	console.log((new Date()) + " Connection accepted.");
+	var connection = request.accept(null, request.origin);	//should check request origin -- sercurity reasons
+	let userName = false;
+	let userColor = false;
+	let userObj = {};
+	clients.set(connection, {});	//user name colour and activity will be added later
 
 	//send chat history
 	stalkers++;
@@ -94,6 +89,7 @@ wsServer.on('request', function(request){
 	if (chatHistory.length > 0)
 	{
 		connection.sendUTF(JSON.stringify({	type: 'history',
+											serverTime: Date.now(),
 											history: chatHistory}));
 	}
 
@@ -103,23 +99,28 @@ wsServer.on('request', function(request){
 			//process message
 			if (userName === false) //first message is the name
 			{
-				//remember userName
-				userName = htmlEntities(message.utf8Data);
-				//get random color and send back to user
-				userColor = randomColor();
+				userName = htmlEntities(message.utf8Data);	//remember userName
+				userColor = randomColor();					//get random color and send back to user
+
 				connection.sendUTF(JSON.stringify({	type: 'color',
 													date: userColor}));
 				console.log((new Date()) + ' User is known as: ' + userName + ' with ' + userColor + ' color.');
 
-				totalConnections++;
-				stalkers--;
-				updateUserSummary();
+
+				//add missing info from this client
+				userObj = {	name :		userName,
+							color :		userColor,
+							lastActive: Date.now() };
+				clients.set(connection, userObj);
 
 				var obj = {	type: 'serverMessege',
 							time: (new Date()).getTime(),
 							text: 'Connected',
 							author: userName,
-							color: userColor}
+							color: userColor	};
+
+				totalConnections++;
+				stalkers--;
 			}
 			else //process message
 			{
@@ -133,7 +134,9 @@ wsServer.on('request', function(request){
 					author: userName,
 					color: userColor
 				};
+				userObj.lastActive = Date.now();
 			}
+			updateUserSummary();
 			updateChatlog(obj);
 			broadcast(obj);
 		}
@@ -141,12 +144,13 @@ wsServer.on('request', function(request){
 
 
 
-	connection.on('close', function(connection){
+	connection.on('close', function(obj){
 		//close user connection
+
 		if (userName !== false && userColor !== false)
 		{
 			console.log((new Date()) + " Peer named \"" + userName + "\" "+ connection.remoteAddress + " disconnected.");
-			var obj = {
+			let obj = {
 				type: 'serverMessege',
 				time: (new Date()).getTime(),
 				text: 'Disconnected',
@@ -155,37 +159,49 @@ wsServer.on('request', function(request){
 			}
 			updateChatlog(obj);
 			broadcast(obj);
-			//remove user from list of clients
-			clients.splice(index, 1);
 			totalConnections--;
 		}
 		else {
 			//must have been a stalker
 			stalkers--;
 		}
+		//remove user from list of clients
+		clients.delete(connection);
 		updateUserSummary();
 	});
-
-	function updateUserSummary()
-	{
-		broadcast({	type: 			"userSummary",
-					connections: 	totalConnections,
-					stalkers:		stalkers	});
-	}
-
-	function updateChatlog(obj)
-	{
-		chatHistory.push(obj);
-		chatHistory = chatHistory.slice(-chatMem);
-	}
-
-	function broadcast(obj)
-	{
-		//broadcast message to connected clients
-		var json = JSON.stringify(obj);
-		for(var i = 0; i < clients.length; i++)
-		{
-			clients[i].sendUTF(json);
-		}
-	}
 });
+
+function updateUserSummary()
+{
+	let userList = [];
+	clients.forEach(function(value, key, mObj){
+		if (value.name != undefined)
+			userList.push(value);
+	})
+
+	broadcast({ type: 				"userSummary",
+				connectionCount: 	totalConnections,
+				connections:		userList,
+				stalkers:			stalkers	});
+}
+
+function updateChatlog(obj)
+{
+	chatHistory.push(obj);
+	chatHistory = chatHistory.slice(-chatMem);
+}
+
+function broadcast(obj)
+{
+	//broadcast message to connected clients
+	let json = JSON.stringify(obj);
+	clients.forEach(function(value, key, mObj){
+		key.sendUTF(json);
+	})
+}
+function printUserNames(list)
+{
+	clients.forEach(function(value, key, mObj){
+		console.log(value.name + " " + value.color);
+	})
+}

@@ -4,13 +4,22 @@ $(function () {
     var content = $('#content');
     var input = $('#input');
     var status = $('#status');
+	let connectionLog = $('#connected');
 	let connectionCount = $('#connectionCount');
 	let stalkers = $('#stalkers');
-
+	console.log((new Date).getTime());
     // my color assigned by the server
     var myColor = false;
     // my name sent to the server
     var myName = false;
+
+	//to sync time with the server
+	let clientTime = new Date();
+	let serverTimeOffset;
+	let awayTime = 10000;	//10 seconds
+
+	//used of online/away
+	let connectedClients = [];
 
     // if user is running mozilla then use it's built-in WebSocket
     window.WebSocket = window.WebSocket || window.MozWebSocket;
@@ -44,7 +53,7 @@ $(function () {
         // try to parse JSON message. Because we know that the server always returns
         // JSON this should work without any problem but we should make sure that
         // the massage is not chunked or otherwise damaged.
-        try {
+		try {
             var json = JSON.parse(message.data);
         } catch (e) {
             console.log('This doesn\'t look like a valid JSON: ', message);
@@ -58,6 +67,7 @@ $(function () {
             // from now user can start sending messages
 
         } else if (json.type === 'history') { // entire message history and current connections
+			serverTimeOffset = json.serverTime - Date.now();
 			// insert every single message to the chat window
             for (var i=0; i < json.history.length - 1; i++)
                 addMessage(json.history[i]);
@@ -72,11 +82,18 @@ $(function () {
 
         } else if (json.type === "userSummary") {
 			updateStalkers(json.stalkers);
-			connectionCount.html("Connections:&nbsp;" + json.connections);
+			connectionCount.html("Connections:&nbsp;" + json.connectionCount);
         }
 		else {
             console.log('This type of messege is not implemented yet: ', json);
         }
+
+		//pretty bad VVV
+		if (json.connections != undefined)
+		{
+			connectedClients = json.connections;
+			updateConnectionLog();
+		}
     };
 
 
@@ -115,6 +132,25 @@ $(function () {
                                                  + 'with the WebSocket server.');
         }
     }, 3000);
+
+	function updateConnectionLog()
+	{
+		connectionLog.empty();
+		for (let i = 0; i < connectedClients.length; i++)
+		{
+			let user = connectedClients[i];
+			let activityLine = '<p><span class="blackOutLine" style="color:' + user.color + '">' + user.name + '</span>'
+			console.log(Date.now() +" "+serverTimeOffset+" "+ user.lastActive + "||" + ((Date.now() + serverTimeOffset)- user.lastActive));
+			if ((Date.now() + serverTimeOffset)- user.lastActive > awayTime)
+				activityLine += '<span style="float: right">' + 'away' + '</span> </p>';
+			else
+				activityLine += '<span style="float: right">' + 'online' + '</span> </p>';
+
+			connectionLog.append(activityLine);
+		}
+	}
+
+	setInterval(function(){updateConnectionLog()},1000);
 
 	function updateStalkers(stalkCount){
 		let stalkStr = "";
