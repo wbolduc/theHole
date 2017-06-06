@@ -16,7 +16,8 @@ $(function () {
 	//to sync time with the server
 	let clientTime = new Date();
 	let serverTimeOffset;
-	let awayTime = 10000;	//10 seconds
+	let awayTimeOnPage = 120000; // 2 minutes
+	let awayTimeOffPage = 10000;	//10 seconds
 
 	//used of online/away
 	let connectedClients = [];
@@ -107,7 +108,8 @@ $(function () {
                 return;
             }
             // send the message as an ordinary text
-            connection.send(msg);
+            connection.send(JSON.stringify({	type: "messege",
+												messege: msg	}));
             $(this).val('');
             // disable the input field to make the user wait until server
             // sends back response
@@ -140,8 +142,9 @@ $(function () {
 		{
 			let user = connectedClients[i];
 			let activityLine = '<p><span class="blackOutLine" style="color:' + user.color + '">' + user.name + '</span>'
-			console.log(Date.now() +" "+serverTimeOffset+" "+ user.lastActive + "||" + ((Date.now() + serverTimeOffset)- user.lastActive));
-			if ((Date.now() + serverTimeOffset)- user.lastActive > awayTime)
+			console.log(user.name + " -> " + ((Date.now() + serverTimeOffset)- user.lastActive) + " : " + ((user.looking) ? awayTimeOnPage:awayTimeOffPage));
+			//console.log(Date.now() +" "+serverTimeOffset+" "+ user.lastActive + "||" + ((Date.now() + serverTimeOffset)- user.lastActive));
+			if ((Date.now() + serverTimeOffset)- user.lastActive > ((user.looking) ? awayTimeOnPage : awayTimeOffPage))
 				activityLine += '<span style="float: right">' + 'away' + '</span> </p>';
 			else
 				activityLine += '<span style="float: right">' + 'online' + '</span> </p>';
@@ -195,4 +198,24 @@ $(function () {
              	+ ': ' + messege.text + '</p>');
 
     }
+
+	//the follwoing code handles user online/away
+	document.addEventListener("visibilitychange", function(){
+		if (document.hidden === true){
+			console.log("hidden");
+			connection.send(JSON.stringify({
+				type: 	"visible",
+				state:	false
+			}));
+		}
+		else {
+			console.log("visible");
+			connection.send(JSON.stringify({
+				type:	"visible",
+				state:	true
+			}));
+		}
+	},false);
+
+
 });

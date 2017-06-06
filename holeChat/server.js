@@ -95,50 +95,65 @@ wsServer.on('request', function(request){
 
 	//user sends message
 	connection.on('message', function(message){
-		if (message.type === 'utf8'){ // only text
+		if (message.type === 'utf8'){ //text type messege
 			//process message
-			if (userName === false) //first message is the name
+			let messageData = JSON.parse(message.utf8Data);
+
+			if (messageData.type === "messege")
 			{
-				userName = htmlEntities(message.utf8Data);	//remember userName
-				userColor = randomColor();					//get random color and send back to user
+				if (userName === false) //first message is the name
+				{
+					userName = htmlEntities(messageData.messege);	//remember userName
+					userColor = randomColor();					//get random color and send back to user
 
-				connection.sendUTF(JSON.stringify({	type: 'color',
-													date: userColor}));
-				console.log((new Date()) + ' User is known as: ' + userName + ' with ' + userColor + ' color.');
+					connection.sendUTF(JSON.stringify({	type: 'color',
+														date: userColor}));
+					console.log((new Date()) + ' User is known as: ' + userName + ' with ' + userColor + ' color.');
 
 
-				//add missing info from this client
-				userObj = {	name :		userName,
-							color :		userColor,
-							lastActive: Date.now() };
-				clients.set(connection, userObj);
+					//add missing info from this client
+					userObj = {	name :		userName,
+								color :		userColor,
+								looking:	true,
+								lastActive: Date.now() };
+					clients.set(connection, userObj);
 
-				var obj = {	type: 'serverMessege',
-							time: (new Date()).getTime(),
-							text: 'Connected',
-							author: userName,
-							color: userColor	};
+					var obj = {	type: 'serverMessege',
+								time: (new Date()).getTime(),
+								text: 'Connected',
+								author: userName,
+								color: userColor	};
 
-				totalConnections++;
-				stalkers--;
+					totalConnections++;
+					stalkers--;
+				}
+				else //process message
+				{
+					console.log((new Date()) + ' Received Message from '
+	                            + userName + ': ' + message.utf8Data);
+
+					var obj = {
+						type: 'message',
+						time: (new Date()).getTime(),
+						text: htmlEntities(messageData.messege),
+						author: userName,
+						color: userColor
+					};
+					userObj.lastActive = Date.now();
+				}
+				updateUserSummary();
+				updateChatlog(obj);
+				broadcast(obj);
 			}
-			else //process message
+
+			else if (messageData.type === "visible") {
+				console.log(userName + " in " + ((messageData.state) ? "active":"away") + " state");
+				clients.get(connection).looking = messageData.state;	//let people know if users are looking
+			}
+			else
 			{
-				console.log((new Date()) + ' Received Message from '
-                            + userName + ': ' + message.utf8Data);
-
-				var obj = {
-					type: 'message',
-					time: (new Date()).getTime(),
-					text: htmlEntities(message.utf8Data),
-					author: userName,
-					color: userColor
-				};
-				userObj.lastActive = Date.now();
+				console.log("client sent back some weird shit");
 			}
-			updateUserSummary();
-			updateChatlog(obj);
-			broadcast(obj);
 		}
 	});
 
@@ -185,6 +200,8 @@ function updateUserSummary()
 				stalkers:			stalkers	});
 }
 
+setInterval(updateUserSummary, 10000); //let the others know if someone has left even if nobody is talking
+
 function updateChatlog(obj)
 {
 	chatHistory.push(obj);
@@ -199,6 +216,7 @@ function broadcast(obj)
 		key.sendUTF(json);
 	})
 }
+
 function printUserNames(list)
 {
 	clients.forEach(function(value, key, mObj){
