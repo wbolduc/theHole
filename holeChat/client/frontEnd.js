@@ -141,15 +141,22 @@ $(function () {
 		for (let i = 0; i < connectedClients.length; i++)
 		{
 			let user = connectedClients[i];
-			let activityLine = '<p><span class="blackOutLine" style="color:' + user.color + '">' + user.name + '</span>'
+			let activityLine = '<p><span class="blackOutLine" style="color:' + user.color + '">' + user.name + '</span>' + '<span style="float: right">';
 			console.log(user.name + " -> " + ((Date.now() + serverTimeOffset)- user.lastActive) + " : " + ((user.looking) ? awayTimeOnPage:awayTimeOffPage));
 			//console.log(Date.now() +" "+serverTimeOffset+" "+ user.lastActive + "||" + ((Date.now() + serverTimeOffset)- user.lastActive));
-			if ((Date.now() + serverTimeOffset)- user.lastActive > ((user.looking) ? awayTimeOnPage : awayTimeOffPage))
-				activityLine += '<span style="float: right">' + 'away' + '</span> </p>';
+			let awayness = ((Date.now() + serverTimeOffset)- user.lastActive) / ((user.looking) ? awayTimeOnPage : awayTimeOffPage)
+			if (awayness <= .2)
+				activityLine += "🌕"
+			else if (awayness <= .4)
+				activityLine += "🌔"
+			else if (awayness <= .6)
+				activityLine += "🌓"
+			else if (awayness <= .8)
+				activityLine += "🌒"
 			else
-				activityLine += '<span style="float: right">' + 'online' + '</span> </p>';
+				activityLine += "🌑"
 
-			connectionLog.append(activityLine);
+			connectionLog.append(activityLine + '</span> </p>');
 		}
 	}
 
