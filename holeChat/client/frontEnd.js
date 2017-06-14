@@ -16,8 +16,8 @@ $(function () {
 	//to sync time with the server
 	let clientTime = new Date();
 	let serverTimeOffset;
-	let awayTimeOnPage = 120000; // 2 minutes
-	let awayTimeOffPage = 10000;	//10 seconds
+	let awayTimeOnPage = 180000; // 3 minutes
+	let awayTimeOffPage = 30000;	//30 seconds
 
 	//used of online/away
 	let connectedClients = [];
@@ -142,8 +142,7 @@ $(function () {
 		{
 			let user = connectedClients[i];
 			let activityLine = '<p><span class="blackOutLine" style="color:' + user.color + '">' + user.name + '</span>' + '<span style="float: right">';
-			console.log(user.name + " -> " + ((Date.now() + serverTimeOffset)- user.lastActive) + " : " + ((user.looking) ? awayTimeOnPage:awayTimeOffPage));
-			//console.log(Date.now() +" "+serverTimeOffset+" "+ user.lastActive + "||" + ((Date.now() + serverTimeOffset)- user.lastActive));
+			//console.log(user.name + " -> " + ((Date.now() + serverTimeOffset)- user.lastActive) + " : " + ((user.looking) ? awayTimeOnPage:awayTimeOffPage));
 			let awayness = ((Date.now() + serverTimeOffset)- user.lastActive) / ((user.looking) ? awayTimeOnPage : awayTimeOffPage)
 			if (awayness <= .2)
 				activityLine += "🌕"
