@@ -6,9 +6,8 @@
 
         <style>
         * { font-family:tahoma; font-size:16px; padding:0px; margin:0px; }
-        p { line-height:18px;}
+        p { line-height:18px; margin-left: 5px; margin-right: 5px}
 		.blackOutLine{ text-shadow: -.5px 0 black, 0 .5px black, .5px 0 black, 0 -.5px black; }
-        .chatArea { width:500px; margin-left: 10px; float: left;}
 
 		.connectionBox	{	float:left;
 							margin: 10px;
@@ -22,21 +21,44 @@
 								line-height: 18px;
 								padding: 2px}
 
-		#stalkers { border-bottom-style: none;}
+		.overlay {	position: absolute;
+					width: 100%;
+					height: 100%;
+					background-color: gray;
+					opacity: .6;	}
 
-        #content {	padding:5px;
-			 		background:#ddd;
+		.centered {	position: absolute;
+					height: 100%;
+					width: 100%;
+					display: flex;
+					justify-content: center;
+					align-items: center}
+
+		#chatArea {	width:700px;
+			 		height:900px;
+					margin-left: 10px;
+					margin-top: 10px;
+				    position:relative;
+					float: left;
+					display:flex;
+					flex-direction: column;
+					border-radius: 5px;
+					border-style: dashed;	}
+
+		#content {	width: 100%;
+					height: 100%;
+					overflow-y:scroll;
+					background-color:#F5DEB3;	}
+
+		#inputBar {	align-self: flex-end;
+    				width:100%;
+    				background-color:#3d6;	}
+
+        #input {	align-self: flex-end;
+					width:100%;
 					border-radius:5px;
-					overflow-y: scroll;
-					border:2px solid #CCC;
-					margin-top:10px;
-					height: 800px;	}
-
-        #input {	border-radius:5px;
 			 		border:1px solid #ccc;
-					padding:5px;
-					width: 100%; }
-
+					padding:5px;	}
 
         </style>
     </head>
@@ -44,19 +66,33 @@
 		<div class="connectionBox">
 			<div id="connectionCount" class="connectionElement" style="background:#3d6">Connections: 0</div>
 			<div id="connected" class="connectionElement"></div>
-			<div id="stalkers" class="connectionElement">You are a stalker</div>
+			<div id="stalkers" style="border-bottom-style: none;" class="connectionElement">You are a stalker</div>
 		</div>
 
-		<div class="chatArea" style="width">
-			<div id="content" class="chatArea"></div>
+		<div id="chatArea">
+			<div id="content"></div>
+			<div id="inputBar">
+				<div style="display: flex;">
+				<span id="status" style="padding: 5px;">Connecting...</span>
+				<input id="input" disabled="disabled"/>
+				</div>
+			</div>
 
-			<div class="chatArea" style="margin:10px; display:table">
-    			<span id="status" style="display:table-cell; word-wrap:break-word; margin-left:10px; width:1px; min-width:100px; max-width:120px;">Connecting...</span>
-    			<input id="input" disabled="disabled" style="display:table-cell; margin-left:2px; width:100%" />
+			<div id="nameInputOverlay" style="position:absolute; width: 100%; height: 100%;">
+				<div class="overlay"></div>
+				<div class="centered">
+					<div style="padding:10px; background:white; border-style:solid; border-radius: 5px; border-width: 2px;">
+						<span style="margin-right:0px">Enter name:</span>
+						<input id="nameInput" style="margin-left:1px"></input>
+					</div>
+				</div>
 			</div>
 		</div>
 
+
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="./frontEnd.js"></script>
+		<!--
+		-->
     </body>
 </html>

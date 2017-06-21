@@ -1,13 +1,16 @@
 $(function () {
     "use strict";
     // for better performance - to avoid searching in DOM
-    var content = $('#content');
-    var input = $('#input');
-    var status = $('#status');
+	let nameInput = $('#nameInput');
+    let content = $('#content');
+	let nameInputOverlay = $('#nameInputOverlay');
+    let input = $('#input');
+    let status = $('#status');
 	let connectionLog = $('#connected');
 	let connectionCount = $('#connectionCount');
 	let stalkers = $('#stalkers');
 	console.log((new Date).getTime());
+
     // my color assigned by the server
     var myColor = false;
     // my name sent to the server
@@ -40,7 +43,7 @@ $(function () {
     connection.onopen = function () {
         // first we want users to enter their names
         input.removeAttr('disabled');
-        status.html('Choose&nbsp;name:');
+        status.html('Connected');
     };
 
     connection.onerror = function (error) {
@@ -98,6 +101,20 @@ $(function () {
     };
 
 
+	nameInput.keyup(function(e){
+		if (e.keyCode === 13)
+		{
+			let name = $(this).val();
+			if (!name)
+				return;
+
+			connection.send(JSON.stringify({	type: "userName",
+												userName: name	}));
+			nameInputOverlay.fadeOut(300, function(){nameInputOverlay.remove();});
+			myName = name;
+		}
+	});
+
     /**
      * Send mesage when user presses Enter key
      */
@@ -114,11 +131,6 @@ $(function () {
             // disable the input field to make the user wait until server
             // sends back response
             input.attr('disabled', 'disabled');
-
-            // we know that the first message sent from a user their name
-            if (myName === false) {
-                myName = msg;
-            }
         }
     });
 
